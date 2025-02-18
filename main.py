@@ -8,7 +8,7 @@ bot = telebot.TeleBot(TOKEN)
 @bot.message_handler(commands=['start'])
 def welcome_message(message):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    web_app = WebAppInfo("https://www.ya.ru")
+    web_app = WebAppInfo("https://imfamous1.github.io/4-md-19-mini-app/")
     button = KeyboardButton(text="Открыть Mini App", web_app=web_app)
     keyboard.add(button)
     bot.send_message(message.from_user.id, "Запустить приложение",
