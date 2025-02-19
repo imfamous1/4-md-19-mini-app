@@ -92,6 +92,7 @@
         let tg = window.Telegram.WebApp; // Инициализация Telegram Web App
         let currentCard = null; // Переменная для хранения текущей карточки
 
+        tg.expand()
         // Обработчик для кнопки "🎡Крутить"
         document.getElementById('spinButton').addEventListener('click', function() {
             const cardImage = document.getElementById('cardImage');

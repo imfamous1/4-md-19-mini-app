@@ -1,4 +1,5 @@
 import json
+import os
 
 import telebot
 from telebot.types import ReplyKeyboardMarkup, WebAppInfo, KeyboardButton
@@ -19,7 +20,24 @@ def welcome_message(message):
 
 @bot.message_handler(content_types=['web_app_data'])
 def web_app_data_handler(message):
-    data = json.loads(message.web_app_data.data)
-    print(f"Получены данные с Mini App: {data}")
+    try:
+        # Получаем данные из Mini App
+        data = json.loads(message.web_app_data.data)
+        print(f"Получены данные с Mini App: {data}")
+
+        # Формируем текст и путь к изображению
+        text = f"{data['title']}\n\n{data['description']}"
+        photo_path = data['image']  # Локальный путь к изображению, например '2.png'
+
+        # Проверяем, существует ли файл
+        if not os.path.exists(photo_path):
+            raise FileNotFoundError(f"Файл {photo_path} не найден")
+
+        # Открываем изображение как файл и отправляем
+        with open(photo_path, 'rb') as photo:
+            bot.send_photo(message.from_user.id, photo=photo, caption=text)
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        bot.send_message(message.from_user.id, "Произошла ошибка при обработке данных. Попробуйте еще раз.")
 
 bot.polling()
