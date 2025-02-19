@@ -1,52 +1,154 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini App</title>
+    <title>Мини-приложение в Telegram</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
             text-align: center;
+            background-color: #fff;
             padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card img {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 10px;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .card h2, .card p {
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .rotate {
+            animation: spin 0.5s linear;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotateY(0deg);
+            }
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin: 5px; /* Отступ между кнопками */
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #sendToTelegram {
+            background-color: #28a745; /* Зеленый цвет для кнопки "Отправить в Telegram" */
+        }
+
+        #sendToTelegram:hover {
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
-    <h1>Привет, <span id="username">Гость</span>!</h1>
-    <button onclick="update_counter()">Увеличить счетчик</button>
-    <button onclick="send_data()">Передать счетчик в бота</button>
-    <button onclick="close_app()">Закрыть приложение</button>
-    <p id="counter">0</p>
-
+    <div class="container">
+        <div class="card" id="card">
+            <img id="cardImage" src="main.jpg" alt="Карточка">
+            <h2 id="cardTitle">Нажми "🎡Крутить",<br> чтобы Великий Рандом <br>определил твой<br>идеальный мэтч!</h2>
+            <p id="cardDescription">Описание карточки</p>
+        </div>
+        <button id="spinButton">🎡Крутить</button>
+        <button id="sendToTelegram">Отправить в Telegram</button>
+    </div>
     <script>
-        let tg = window.Telegram.WebApp;
-        // tg.expand()
+        let tg = window.Telegram.WebApp; // Инициализация Telegram Web App
+        let currentCard = null; // Переменная для хранения текущей карточки
 
-        // COUNTER
-        let counter = 0;
-        let preview_counter = document.getElementById("counter");
-        function update_counter() {
-            counter++;
-            preview_counter.textContent = counter;
-        }
+        // Обработчик для кнопки "🎡Крутить"
+        document.getElementById('spinButton').addEventListener('click', function() {
+            const cardImage = document.getElementById('cardImage');
+            const cardTitle = document.getElementById('cardTitle');
+            const cardDescription = document.getElementById('cardDescription');
 
-        // CLOSE APP
-        function close_app() {
-            tg.close();
-        }
+            // Добавляем анимацию вращения
+            cardImage.classList.add('rotate');
+            cardTitle.classList.add('rotate');
+            cardDescription.classList.add('rotate');
 
-        // SEND DATA TO BOT
-        function send_data() {
-            tg.sendData(JSON.stringify({
-                action: "counter_update",
-                value: counter
-                }));
-        }
+            // Ждем завершения анимации вращения
+            setTimeout(() => {
+                fetch('cards.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        const cards = data.cards;
+                        const randomIndex = Math.floor(Math.random() * cards.length);
+                        const randomCard = cards[randomIndex];
 
+                        // Сохраняем текущую карточку
+                        currentCard = randomCard;
 
+                        // Обновляем содержимое карточки
+                        cardImage.src = randomCard.image;
+                        cardTitle.textContent = randomCard.title;
+                        cardDescription.textContent = randomCard.description;
+
+                        // Убираем анимацию вращения
+                        cardImage.classList.remove('rotate');
+                        cardTitle.classList.remove('rotate');
+                        cardDescription.classList.remove('rotate');
+                    })
+                    .catch(error => console.error('Ошибка загрузки карточек:', error));
+            }, 500); // Задержка для завершения анимации вращения
+        });
+
+        // Обработчик для кнопки "Отправить в Telegram"
+        document.getElementById('sendToTelegram').addEventListener('click', function() {
+            if (!currentCard) {
+                alert("Сначала выберите карточку, нажав '🎡Крутить'!");
+                return;
+            }
+
+            // Формируем объект с данными карточки
+            const cardData = {
+                image: currentCard.image, // Ссылка на картинку
+                title: currentCard.title, // Заголовок
+                description: currentCard.description, // Описание
+            };
+
+            // Отправляем данные в Telegram через Web App
+            tg.sendData(JSON.stringify(cardData));
+
+            // Закрываем мини-приложение (опционально)
+            // tg.close();
+        });
     </script>
-
-
 </body>
 </html>

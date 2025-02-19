@@ -1,3 +1,5 @@
+import json
+
 import telebot
 from telebot.types import ReplyKeyboardMarkup, WebAppInfo, KeyboardButton
 
@@ -15,6 +17,9 @@ def welcome_message(message):
                      reply_markup=keyboard)
 
 
-
+@bot.message_handler(content_types=['web_app_data'])
+def web_app_data_handler(message):
+    data = json.loads(message.web_app_data.data)
+    print(f"Получены данные с Mini App: {data}")
 
 bot.polling()
