@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мини-приложение в Telegram</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin: 5px; /* Отступ между кнопками */
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Мини-приложение в Telegram</h1>
+        <button id="showUsers">Показать пользователей</button>
+    </div>
+    <script>
+        let tg = window.Telegram.WebApp; // Инициализация Telegram Web App
+
+        tg.expand()
+
+        const user = tg.initDataUnsafe.user; // Получаем данные пользователя из Telegram Web App
+        
+        if (user) {
+                const userData = {
+                    user_id: user.id.toString(),
+                    username: user.username || '',
+                    first_name: user.first_name || '',
+                    last_name: user.last_name || ''
+                };
+
+                fetch('https://zkokorin.pythonanywhere.com/save_user/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                })
+                .then(response => response.json())
+                .then(data => console.log('User saved:', data))
+                .catch(error => console.error('Error saving user:', error));
+            }
+
+        
+            document.getElementById('showUsers').addEventListener('click', function() {
+                fetch('https://zkokorin.pythonanywhere.com/get_all_users/', {
+                    method: 'GET',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.users && data.users.length > 0) {
+                        let message = "Список пользователей:\n\n";
+                        data.users.forEach(user => {
+                            message += `ID: ${user.user_id}\n`;
+                            message += `Username: ${user.username || 'не указан'}\n`;
+                            if (user.first_name || user.last_name) {
+                                message += `Имя: ${user.first_name || ''} ${user.last_name || ''}\n`;
+                            }
+                            message += "--------------------\n";
+                        });
+                        alert(message);
+                    } else {
+                        alert("В базе нет пользователей");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error', error);
+                    alert("Ошибка при получении пользователей");
+                });
+            });
+
+
+
+            
+    </script>
+</body>
+</html>
